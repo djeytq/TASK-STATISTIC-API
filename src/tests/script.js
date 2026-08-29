@@ -428,6 +428,7 @@ sendTasksButton.addEventListener(
                 "Generating PDF...";
 
 
+                alert("Generating PDF...");
             const response =
                 await fetch(
                     "http://localhost:8083/dev/task/generate-report",
@@ -457,14 +458,14 @@ sendTasksButton.addEventListener(
             /* Handle PDF response as blob */
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            
+
             /* Create temporary link to trigger download */
             const link = document.createElement("a");
             link.href = url;
             link.download = "tasks.pdf";
             document.body.appendChild(link);
             link.click();
-            
+
             /* Cleanup */
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
@@ -477,11 +478,11 @@ sendTasksButton.addEventListener(
 
             /* RESET */
 
-            tasks = [];
+            /* tasks = [];
 
             nextId = 1;
 
-            editingTaskId = null;
+            editingTaskId = null; */
 
 
             renderTasks();

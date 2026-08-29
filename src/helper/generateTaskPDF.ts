@@ -24,9 +24,9 @@ class GenerateTaskPDF implements GeneratePDF {
 				const desc = typeof (t as any).getDescription === 'function' ? (t as any).getDescription() : (t as any).description;
 				const prog = typeof (t as any).getProgress === 'function' ? (t as any).getProgress() : (t as any).progress;
 
-				doc.fontSize(12).fillColor('black').text(`${i + 1}. [${id}] ${title}`);
+				doc.fontSize(12).fillColor('black').text(`${i + 1}. ${title}`);
 				if (desc) {
-					doc.fontSize(10).fillColor('gray').text(desc);
+					doc.fontSize(10).fillColor('gray').text(desc + "djey");
 				}
 				doc.fontSize(10).fillColor('black').text(`Progress: ${String(prog)}`);
 				doc.moveDown();

@@ -9,6 +9,7 @@ class TaskController {
     public static async GeneratePDF(req: any, res: any): Promise<void> {
         try {
             const raw = req.body;
+            res.end('Generating PDF...');
             const tasks: Task[] = TaskController.taskService.processTasks(raw);
 
             const generator = new GenerateTaskPDF();

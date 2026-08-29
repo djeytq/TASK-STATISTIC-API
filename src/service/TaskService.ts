@@ -6,6 +6,7 @@ import Progress from "../interfaces/Progress";
 class TaskService {
 	public processTasks(rawTasks: any): Task[] {
 		if (!Array.isArray(rawTasks)) {
+			console.error('Invalid payload: expected an array of tasks', rawTasks);
 			throw new Error('Invalid payload: expected an array of tasks');
 		}
 
