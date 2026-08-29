@@ -4,7 +4,7 @@ class TaskController {
 
     private taskLIst: Task[] = [];
 
-    public
+   
 
     public static Add(req: any, res: any): void {
         
