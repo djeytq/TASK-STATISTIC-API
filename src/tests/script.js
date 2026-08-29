@@ -430,7 +430,7 @@ sendTasksButton.addEventListener(
 
             const response =
                 await fetch(
-                    "http://localhost:8080/tasks",
+                    "http://localhost:8083/dev/task/generate-report",
                     {
                         method: "POST",
 

@@ -1,16 +1,29 @@
 import Task from "../model/Task";
 import TaskService from "../service/TaskService";
+import GenerateTaskPDF from "../helper/generateTaskPDF";
 
 class TaskController {
 
     private taskLIst: Task[] = [];
     private static readonly taskService: TaskService = new TaskService();
 
-    public static GeneratePDF(req: any, res: any): void {
-        let data: Task[];
-        console.log(req.body);
+    public static async GeneratePDF(req: any, res: any): Promise<void> {
+        try {
+            const raw = req.body;
+            const tasks: Task[] = TaskController.taskService.processTasks(raw);
 
-        res.end('GeneratePDF');
+            const generator = new GenerateTaskPDF();
+            const pdfBuffer = await generator.generate(tasks);
+
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename="tasks.pdf"');
+            res.setHeader('Content-Length', String(pdfBuffer.length));
+            res.end(pdfBuffer);
+        } catch (err: any) {
+            console.error('GeneratePDF error:', err);
+            res.statusCode = 400;
+            res.end(String(err.message || err));
+        }
     }
 
    
