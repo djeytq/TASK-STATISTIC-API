@@ -425,7 +425,7 @@ sendTasksButton.addEventListener(
         try {
 
             message.textContent =
-                "Sending tasks...";
+                "Generating PDF...";
 
 
             const response =
@@ -447,19 +447,31 @@ sendTasksButton.addEventListener(
 
             if (!response.ok) {
 
+                const errorText = await response.text();
                 throw new Error(
-                    `HTTP ${response.status}`
+                    `HTTP ${response.status}: ${errorText}`
                 );
             }
 
 
-            const data =
-                await response.json();
+            /* Handle PDF response as blob */
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            /* Create temporary link to trigger download */
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "tasks.pdf";
+            document.body.appendChild(link);
+            link.click();
+            
+            /* Cleanup */
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
 
 
             console.log(
-                "Server response:",
-                data
+                "PDF generated successfully!"
             );
 
 
@@ -476,7 +488,7 @@ sendTasksButton.addEventListener(
 
 
             message.textContent =
-                "Tasks sent successfully!";
+                "PDF generated successfully!";
 
 
         } catch (error) {
@@ -484,7 +496,7 @@ sendTasksButton.addEventListener(
             console.error(error);
 
             message.textContent =
-                "Failed to send tasks.";
+                "Failed to generate PDF: " + error.message;
         }
     }
 );
