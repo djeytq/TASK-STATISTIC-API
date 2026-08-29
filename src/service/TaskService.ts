@@ -18,6 +18,7 @@ class TaskService {
 			const description = String(r.description ?? '');
 			const rawProg = String(r.progress ?? 'TO_DO') as Progress;
 			const progress = allowed.includes(rawProg as Progress) ? (rawProg as Progress) : 'TO_DO';
+			console.log(progress);
 
 			return new Task(id, title, description, progress);
 		});

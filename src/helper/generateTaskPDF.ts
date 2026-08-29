@@ -6,10 +6,10 @@ import GeneratePDF from "../interfaces/generatePDF";
  * Assumindo 4 categorias de status. Se o seu Task model ainda não tem
  * um campo "status", veja o fallback em getStatus() abaixo — ele deriva
  * o status a partir de "progress" (numérico), mas isso NÃO distingue
- * "to_test" de "in_progress". O ideal é adicionar um campo real
- * `status: 'done' | 'in_progress' | 'to_test' | 'todo'` no Task.
+ * "IN_TEST" de "IN_PROGRESS". O ideal é adicionar um campo real
+ * `status: 'DONE' | 'IN_PROGRESS' | 'IN_TEST' | 'TO_DO'` no Task.
  */
-type TaskStatus = 'done' | 'in_progress' | 'to_test' | 'todo';
+type TaskStatus = 'DONE' | 'IN_PROGRESS' | 'IN_TEST' | 'TO_DO';
 
 interface StatusStyle {
     label: string;
@@ -18,10 +18,10 @@ interface StatusStyle {
 }
 
 const STATUS_STYLES: Record<TaskStatus, StatusStyle> = {
-    done:        { label: 'Concluída',    color: '#16a34a', light: '#dcfce7' },
-    in_progress: { label: 'Em Progresso', color: '#f59e0b', light: '#fef3c7' },
-    to_test:     { label: 'Em Teste',     color: '#2563eb', light: '#dbeafe' },
-    todo:        { label: 'A Fazer',      color: '#6b7280', light: '#f3f4f6' },
+    DONE:        { label: 'Concluída',    color: '#16a34a', light: '#dcfce7' },
+    IN_PROGRESS: { label: 'Em Progresso', color: '#f59e0b', light: '#fef3c7' },
+    IN_TEST:     { label: 'Em Teste',     color: '#2563eb', light: '#dbeafe' },
+    TO_DO:        { label: 'A Fazer',      color: '#6b7280', light: '#f3f4f6' },
 };
 
 class GenerateTaskPDF implements GeneratePDF {
@@ -67,26 +67,26 @@ class GenerateTaskPDF implements GeneratePDF {
         // Fallback: deriva de um "progress" numérico (0-100) se não houver status.
         const progress = typeof t.getProgress === 'function' ? t.getProgress() : t.progress;
         const p = Number(progress) || 0;
-        if (p >= 100) return 'done';
-        if (p > 0) return 'in_progress';
-        return 'todo';
+        if (p >= 100) return 'DONE';
+        if (p > 0) return 'IN_PROGRESS';
+        return progress;
     }
 
     // ---------- estatísticas ----------
 
     private computeStats(tasks: Task[]) {
-        const counts: Record<TaskStatus, number> = { done: 0, in_progress: 0, to_test: 0, todo: 0 };
+        const counts: Record<TaskStatus, number> = { DONE: 0, IN_PROGRESS: 0, IN_TEST: 0, TO_DO: 0 };
         tasks.forEach((t) => counts[this.getStatus(t)]++);
 
         const total = tasks.length || 1;
         const percentages: Record<TaskStatus, number> = {
-            done: Math.round((counts.done / total) * 100),
-            in_progress: Math.round((counts.in_progress / total) * 100),
-            to_test: Math.round((counts.to_test / total) * 100),
-            todo: Math.round((counts.todo / total) * 100),
+            DONE: Math.round((counts.DONE / total) * 100),
+            IN_PROGRESS: Math.round((counts.IN_PROGRESS / total) * 100),
+            IN_TEST: Math.round((counts.IN_TEST / total) * 100),
+            TO_DO: Math.round((counts.TO_DO / total) * 100),
         };
 
-        return { total: tasks.length, counts, percentages, overallProgress: percentages.done };
+        return { total: tasks.length, counts, percentages, overallProgress: percentages.DONE };
     }
 
     // ---------- desenho ----------
@@ -104,7 +104,7 @@ class GenerateTaskPDF implements GeneratePDF {
             .text(`Dia de trabalho: ${dateStr}`, 40, 55);
 
         doc.fontSize(10)
-            .text(`Progresso geral: ${stats.overallProgress}% concluído (${stats.counts.done}/${stats.total} tarefas)`, 40, 70);
+            .text(`Progresso geral: ${stats.overallProgress}% concluído (${stats.counts.DONE}/${stats.total} tarefas)`, 40, 70);
 
         doc.y = 110;
     }
@@ -116,10 +116,10 @@ class GenerateTaskPDF implements GeneratePDF {
         const startX = 40;
 
         const cards: { key: TaskStatus; value: number }[] = [
-            { key: 'done', value: stats.counts.done },
-            { key: 'in_progress', value: stats.counts.in_progress },
-            { key: 'to_test', value: stats.counts.to_test },
-            { key: 'todo', value: stats.counts.todo },
+            { key: 'DONE', value: stats.counts.DONE },
+            { key: 'IN_PROGRESS', value: stats.counts.IN_PROGRESS },
+            { key: 'IN_TEST', value: stats.counts.IN_TEST },
+            { key: 'TO_DO', value: stats.counts.TO_DO },
         ];
 
         cards.forEach((card, i) => {
@@ -209,7 +209,8 @@ class GenerateTaskPDF implements GeneratePDF {
             let x = startX;
             const headers: [string, number][] = [
                 ['ID', colWidths.id], ['Título', colWidths.title], ['Descrição', colWidths.description],
-                ['Status', colWidths.status], ['Progresso', colWidths.progress],
+                ['Status', colWidths.status], 
+                /* ['Progresso', colWidths.progress], */
             ];
             headers.forEach(([label, w]) => {
                 doc.text(label, x + 6, y + 8, { width: w - 8 });
@@ -244,10 +245,10 @@ class GenerateTaskPDF implements GeneratePDF {
                 .text(style.label, x + 6, y + 9, { width: colWidths.status - 12, align: 'center' });
             x += colWidths.status;
 
-            const progress = typeof (t as any).getProgress === 'function' ? (t as any).getProgress() : (t as any).progress;
+         /*    const progress = typeof (t as any).getProgress === 'function' ? (t as any).getProgress() : (t as any).progress;
             doc.fillColor('#374151').font('Helvetica').fontSize(9)
-                .text(progress != null ? `${progress}%` : '—', x + 6, y + 8, { width: colWidths.progress - 8 });
-
+                .text(progress != null ? `${progress} teste %` : '—', x + 6, y + 8, { width: colWidths.progress - 8 });
+ */
             y += rowHeight;
         });
 
