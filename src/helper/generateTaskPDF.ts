@@ -253,6 +253,17 @@ class GenerateTaskPDF implements GeneratePDF {
         });
 
         doc.y = y + 20;
+
+        
+    }
+
+    private generateFooter(doc: PDFKit.PDFDocument) {
+        doc.fontSize(8).fillColor('#bdc3c7').text(
+            'This is an automated task report.',
+            50,
+            780,
+            { align: 'center', width: 500 }
+        );
     }
 }
 
