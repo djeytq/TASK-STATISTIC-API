@@ -2,23 +2,23 @@ import Progress from "../interfaces/Progress";
 
 
 class Task {
-    private id: Number;
+    private id: number;
     private title: string;
     private description: string;
     private progress: Progress;
 
-    constructor(id: Number, title: string, description: string, progress: Progress) {
+    constructor(id: number, title: string, description: string, progress: Progress) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.progress = progress;
     }
 
-    public getId(): Number {
+    public getId(): number {
         return this.id;
     }
 
-    public setId(id: Number): void {
+    public setId(id: number): void {
         this.id = id;
     }
 

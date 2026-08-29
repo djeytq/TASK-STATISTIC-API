@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="./style.css">
+
+    <title>Task Statistic</title>
+</head>
+
+<body>
+
+    <main class="container">
+
+        <header class="header">
+
+            <div>
+                <p class="eyebrow">TASK STATISTIC</p>
+
+                <h1>My Tasks</h1>
+
+                <p class="subtitle">
+                    Manage your tasks and generate your report.
+                </p>
+            </div>
+
+            <span id="taskCounter" class="counter">
+                0 tasks
+            </span>
+
+        </header>
+
+
+        <!-- TASK LIST -->
+
+        <section id="taskList" class="task-list">
+        </section>
+
+
+        <!-- MAIN ACTIONS -->
+
+        <div class="actions">
+
+            <button
+                type="button"
+                id="addTaskButton"
+                class="btn btn-secondary"
+            >
+                + Add Task
+            </button>
+
+
+            <button
+                type="button"
+                id="sendTasksButton"
+                class="btn btn-primary"
+            >
+                Generate PDF
+            </button>
+
+        </div>
+
+
+        <p id="message" class="message"></p>
+
+    </main>
+
+
+    <!-- ========================= -->
+    <!-- TASK MODAL -->
+    <!-- ========================= -->
+
+    <dialog id="taskDialog" class="task-dialog">
+
+        <form id="taskForm" method="dialog">
+
+            <div class="dialog-header">
+
+                <div>
+                    <p class="eyebrow">TASK</p>
+
+                    <h2 id="dialogTitle">
+                        Add Task
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    id="closeDialogButton"
+                    class="close-button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <!-- TITLE -->
+
+            <div class="form-group">
+
+                <label for="title">
+                    Title
+                </label>
+
+                <input
+                    type="text"
+                    id="title"
+                    placeholder="Ex: Create login page"
+                    required
+                >
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+
+            <div class="form-group">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    placeholder="Describe the task..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <!-- PROGRESS -->
+
+            <div class="form-group">
+
+                <label for="progress">
+                    Progress
+                </label>
+
+                <select id="progress">
+
+                    <option value="TO_DO">
+                        To Do
+                    </option>
+
+                    <option value="IN_PROGRESS">
+                        In Progress
+                    </option>
+
+                    <option value="IN_TEST">
+                        In Test
+                    </option>
+
+                    <option value="DONE">
+                        Done
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- DIALOG ACTIONS -->
+
+            <div class="dialog-actions">
+
+                <button
+                    type="button"
+                    id="cancelButton"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Save Task
+                </button>
+
+            </div>
+
+        </form>
+
+    </dialog>
+
+
+    <script src="./script.js"></script>
+
+</body>
+
+</html>

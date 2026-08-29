@@ -8,5 +8,6 @@ Router.put('/update', TaskController.Update);
 Router.delete('/delete', TaskController.Delete);
 Router.get('/get', TaskController.Get);
 Router.get('/getAll', TaskController.GetAll);
+Router.post('/generatePDF', TaskController.GeneratePDF);
 
 export default Router;

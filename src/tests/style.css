@@ -1,0 +1,529 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+
+    font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f5f7;
+    color: #17181a;
+
+    padding: 40px 20px;
+}
+
+
+.container {
+    width: min(850px, 100%);
+    margin: auto;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    margin-bottom: 30px;
+}
+
+.eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    color: #888;
+
+    margin-bottom: 8px;
+}
+
+h1 {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #777;
+}
+
+
+.counter {
+    padding: 8px 14px;
+
+    background: white;
+
+    border: 1px solid #ddd;
+
+    border-radius: 30px;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   TASK LIST
+========================= */
+
+.task-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+.task-card {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    background: white;
+
+    border: 1px solid #ddd;
+
+    border-radius: 12px;
+
+    padding: 18px 20px;
+
+    animation: appear .2s ease;
+}
+
+
+@keyframes appear {
+
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.task-info {
+    min-width: 0;
+}
+
+
+.task-title {
+    font-size: 16px;
+
+    font-weight: 700;
+
+    margin-bottom: 5px;
+}
+
+
+.task-description {
+
+    font-size: 13px;
+
+    color: #777;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    max-width: 500px;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.task-status {
+
+    display: inline-block;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    background: #f0f0f0;
+
+    margin-top: 8px;
+}
+
+
+/* =========================
+   CARD ACTIONS
+========================= */
+
+.task-actions {
+
+    display: flex;
+
+    gap: 8px;
+}
+
+
+.icon-button {
+
+    border: 1px solid #ddd;
+
+    background: white;
+
+    padding: 7px 10px;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+
+.icon-button:hover {
+    background: #f3f3f3;
+}
+
+
+.delete-button {
+    color: #d33;
+}
+
+
+/* =========================
+   MAIN ACTIONS
+========================= */
+
+.actions {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-top: 25px;
+}
+
+
+.btn {
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 12px 18px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s,
+        opacity .15s;
+}
+
+
+.btn:hover {
+    opacity: .85;
+}
+
+
+.btn:active {
+    transform: scale(.97);
+}
+
+
+.btn-primary {
+
+    background: #17181a;
+
+    color: white;
+}
+
+
+.btn-secondary {
+
+    background: white;
+
+    color: #222;
+
+    border: 1px solid #d5d5d5;
+}
+
+
+/* =========================
+   DIALOG
+========================= */
+
+.task-dialog {
+
+    width: min(500px, calc(100% - 30px));
+
+    border: none;
+
+    border-radius: 16px;
+
+    padding: 0;
+
+    background: white;
+
+    box-shadow:
+        0 20px 70px rgba(0, 0, 0, .25);
+}
+
+
+.task-dialog::backdrop {
+
+    background: rgba(0, 0, 0, .45);
+
+    backdrop-filter: blur(3px);
+}
+
+
+.task-dialog form {
+
+    padding: 25px;
+}
+
+
+/* =========================
+   DIALOG HEADER
+========================= */
+
+.dialog-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    margin-bottom: 25px;
+}
+
+
+.dialog-header h2 {
+
+    font-size: 25px;
+}
+
+
+.close-button {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 27px;
+
+    cursor: pointer;
+
+    color: #777;
+}
+
+
+.close-button:hover {
+    color: #111;
+}
+
+
+/* =========================
+   FORM
+========================= */
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin-bottom: 18px;
+}
+
+
+.form-group label {
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+input,
+textarea,
+select {
+
+    width: 100%;
+
+    border: 1px solid #d5d5d5;
+
+    border-radius: 8px;
+
+    padding: 12px;
+
+    font-size: 14px;
+
+    font-family: inherit;
+
+    outline: none;
+}
+
+
+textarea {
+
+    min-height: 120px;
+
+    resize: vertical;
+}
+
+
+input:focus,
+textarea:focus,
+select:focus {
+
+    border-color: #555;
+
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .06);
+}
+
+
+/* =========================
+   DIALOG ACTIONS
+========================= */
+
+.dialog-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+.message {
+
+    min-height: 20px;
+
+    margin-top: 15px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    color: #555;
+}
+
+
+/* =========================
+   EMPTY
+========================= */
+
+.empty {
+
+    padding: 50px 20px;
+
+    text-align: center;
+
+    color: #888;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 25px 15px;
+    }
+
+
+    .header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+
+    h1 {
+        font-size: 30px;
+    }
+
+
+    .task-card {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+
+    .task-actions {
+
+        width: 100%;
+    }
+
+
+    .task-actions button {
+
+        flex: 1;
+    }
+
+
+    .task-description {
+
+        max-width: 100%;
+    }
+
+
+    .actions {
+
+        flex-direction: column;
+    }
+
+
+    .actions button {
+
+        width: 100%;
+    }
+}

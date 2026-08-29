@@ -1,8 +1,17 @@
 import Task from "../model/Task";
+import TaskService from "../service/TaskService";
 
 class TaskController {
 
     private taskLIst: Task[] = [];
+    private static readonly taskService: TaskService = new TaskService();
+
+    public static GeneratePDF(req: any, res: any): void {
+        let data: Task[];
+        console.log(req.body);
+
+        res.end('GeneratePDF');
+    }
 
    
 
