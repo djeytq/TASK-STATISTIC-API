@@ -1,169 +1,258 @@
-
 import PDFDocument from 'pdfkit';
 import Task from "../model/Task";
 import GeneratePDF from "../interfaces/generatePDF";
 
+/**
+ * Assumindo 4 categorias de status. Se o seu Task model ainda não tem
+ * um campo "status", veja o fallback em getStatus() abaixo — ele deriva
+ * o status a partir de "progress" (numérico), mas isso NÃO distingue
+ * "to_test" de "in_progress". O ideal é adicionar um campo real
+ * `status: 'done' | 'in_progress' | 'to_test' | 'todo'` no Task.
+ */
+type TaskStatus = 'done' | 'in_progress' | 'to_test' | 'todo';
+
+interface StatusStyle {
+    label: string;
+    color: string;
+    light: string;
+}
+
+const STATUS_STYLES: Record<TaskStatus, StatusStyle> = {
+    done:        { label: 'Concluída',    color: '#16a34a', light: '#dcfce7' },
+    in_progress: { label: 'Em Progresso', color: '#f59e0b', light: '#fef3c7' },
+    to_test:     { label: 'Em Teste',     color: '#2563eb', light: '#dbeafe' },
+    todo:        { label: 'A Fazer',      color: '#6b7280', light: '#f3f4f6' },
+};
+
 class GenerateTaskPDF implements GeneratePDF {
-	private getValue(t: any, prop: string) {
-		return typeof t[`get${prop.charAt(0).toUpperCase() + prop.slice(1)}`] === 'function'
-			? t[`get${prop.charAt(0).toUpperCase() + prop.slice(1)}`]()
-			: t[prop];
-	}
 
-	private classify(progress: number) {
-		if (progress >= 100) return 'Done';
-		if (progress <= 0) return 'To Do';
-		return 'In Progress';
-	}
+    public async generate(tasks: Task[]): Promise<Buffer> {
+        const doc = new PDFDocument({ autoFirstPage: false, margin: 40, size: 'A4' });
+        const chunks: Buffer[] = [];
 
-	private drawSummary(doc: PDFKit.PDFDocument, counts: Record<string, number>, total: number, avgProgress: number) {
-		const done = counts['Done'] || 0;
-		const inProgress = counts['In Progress'] || 0;
-		const todo = counts['To Do'] || 0;
+        doc.on('data', (chunk: Buffer) => chunks.push(chunk));
 
-		doc.fontSize(14).fillColor('#003366').text('Summary Report', { underline: true });
-		doc.moveDown(0.4);
-		doc.fontSize(10).fillColor('black');
-		doc.text(`Work day overview: ${total} tasks`);
-		doc.text(`Done: ${done} (${total ? ((done / total) * 100).toFixed(1) : 0}%)  •  In Progress: ${inProgress} (${total ? ((inProgress / total) * 100).toFixed(1) : 0}%)  •  To Do: ${todo} (${total ? ((todo / total) * 100).toFixed(1) : 0}%)`);
-		doc.text(`Average progress: ${avgProgress.toFixed(1)}%`);
-		doc.moveDown();
-	}
+        return new Promise<Buffer>((resolve, reject) => {
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', (err) => reject(err));
 
-	private drawPieChart(doc: PDFKit.PDFDocument, counts: Record<string, number>, x: number, y: number, r: number) {
-		const total = Object.values(counts).reduce((s, v) => s + v, 0) || 1;
-		const colors: Record<string, string> = { 'Done': '#2ecc71', 'In Progress': '#f39c12', 'To Do': '#95a5a6' };
-		let start = -Math.PI / 2; // start at top
+            doc.addPage();
 
-		Object.keys(colors).forEach((key) => {
-			const value = counts[key] || 0;
-			const angle = (value / total) * Math.PI * 2;
-			const end = start + angle;
+            const stats = this.computeStats(tasks);
 
-			doc.save();
-			// compute start point on circle
-			const sx = x + r * Math.cos(start);
-			const sy = y + r * Math.sin(start);
-			doc.moveTo(x, y);
-			// line to start of arc
-			doc.lineTo(sx, sy);
-			// draw arc from start to end
-			/* doc.arc(x, y, r, start, end); */
-			// line back to center and fill
-			doc.lineTo(x, y);
-			doc.fill(colors[key]);
-			doc.restore();
+            this.drawHeader(doc, stats);
+            this.drawSummaryCards(doc, stats);
+            this.drawPieChart(doc, stats);
+            this.drawTable(doc, tasks);
 
-			start = end;
-		});
+            doc.end();
+        });
+    }
 
-		// Legend
-		let ly = y - r;
-		const lx = x + r + 20;
-		Object.keys(colors).forEach((key) => {
-			doc.rect(lx, ly, 10, 10).fill(colors[key]);
-			doc.fillColor('black').fontSize(9).text(` ${key} (${counts[key] || 0})`, lx + 14, ly - 2);
-			ly += 16;
-		});
-	}
+    // ---------- leitura segura dos campos do Task ----------
 
-	private drawTable(doc: PDFKit.PDFDocument, tasks: any[], startX: number, startY: number, colWidths: number[]) {
-		const rowHeight = 20;
-		let y = startY;
+    private getId(t: any): string | number {
+        return typeof t.getId === 'function' ? t.getId() : t.id;
+    }
+    private getTitle(t: any): string {
+        return typeof t.getTitle === 'function' ? t.getTitle() : t.title;
+    }
+    private getDescription(t: any): string {
+        return (typeof t.getDescription === 'function' ? t.getDescription() : t.description) || '';
+    }
+    private getStatus(t: any): TaskStatus {
+        const raw = typeof t.getStatus === 'function' ? t.getStatus() : t.status;
+        if (raw && STATUS_STYLES[raw as TaskStatus]) return raw as TaskStatus;
 
-		// Header
-		doc.rect(startX, y, colWidths.reduce((a, b) => a + b, 0), rowHeight).fill('#003366');
-		doc.fillColor('white').fontSize(10).text('#', startX + 4, y + 5, { width: colWidths[0] - 8 });
-		doc.text('Title', startX + colWidths[0] + 4, y + 5, { width: colWidths[1] - 8 });
-		doc.text('Description', startX + colWidths[0] + colWidths[1] + 4, y + 5, { width: colWidths[2] - 8 });
-		doc.text('Progress', startX + colWidths[0] + colWidths[1] + colWidths[2] + 4, y + 5, { width: colWidths[3] - 8 });
+        // Fallback: deriva de um "progress" numérico (0-100) se não houver status.
+        const progress = typeof t.getProgress === 'function' ? t.getProgress() : t.progress;
+        const p = Number(progress) || 0;
+        if (p >= 100) return 'done';
+        if (p > 0) return 'in_progress';
+        return 'todo';
+    }
 
-		y += rowHeight;
+    // ---------- estatísticas ----------
 
-		tasks.forEach((t: any, i: number) => {
-			const title = String(this.getValue(t, 'title') || '-');
-			const desc = String(this.getValue(t, 'description') || '-');
-			const prog = Number(this.getValue(t, 'progress') ?? 0);
-			const status = this.classify(prog);
+    private computeStats(tasks: Task[]) {
+        const counts: Record<TaskStatus, number> = { done: 0, in_progress: 0, to_test: 0, todo: 0 };
+        tasks.forEach((t) => counts[this.getStatus(t)]++);
 
-			// Row background alternating
-			if (i % 2 === 0) {
-				doc.rect(startX, y, colWidths.reduce((a, b) => a + b, 0), rowHeight).fill('#f7f9fb');
-			}
+        const total = tasks.length || 1;
+        const percentages: Record<TaskStatus, number> = {
+            done: Math.round((counts.done / total) * 100),
+            in_progress: Math.round((counts.in_progress / total) * 100),
+            to_test: Math.round((counts.to_test / total) * 100),
+            todo: Math.round((counts.todo / total) * 100),
+        };
 
-			// Cells
-			doc.fillColor('black').fontSize(9).text(String(i + 1), startX + 4, y + 5, { width: colWidths[0] - 8 });
-			doc.text(title, startX + colWidths[0] + 4, y + 5, { width: colWidths[1] - 8 });
-			doc.fillColor('gray').text(desc, startX + colWidths[0] + colWidths[1] + 4, y + 5, { width: colWidths[2] - 8 });
+        return { total: tasks.length, counts, percentages, overallProgress: percentages.done };
+    }
 
-			// Progress bar cell
-			const progX = startX + colWidths[0] + colWidths[1] + colWidths[2] + 6;
-			const barWidth = colWidths[3] - 12;
-			const barY = y + 6;
-			// bar background
-			doc.roundedRect(progX, barY, barWidth, 8, 2).stroke('#dddddd');
-			// filled
-			const fillW = Math.max(0, Math.min(1, prog / 100)) * barWidth;
-			const fillColor = prog >= 100 ? '#2ecc71' : prog > 0 ? '#f39c12' : '#95a5a6';
-			if (fillW > 0) doc.rect(progX, barY, fillW, 8).fill(fillColor);
+    // ---------- desenho ----------
 
-			// Progress text
-			doc.fillColor('black').fontSize(8).text(`${prog}%  ${status}`, progX + barWidth + 6, y + 3);
+    private drawHeader(doc: PDFKit.PDFDocument, stats: ReturnType<GenerateTaskPDF['computeStats']>) {
+        doc.rect(0, 0, doc.page.width, 90).fill('#111827');
 
-			y += rowHeight;
+        doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(20)
+            .text('Relatório de Tarefas', 40, 25);
 
-			// New page if needed
-			if (y > doc.page.height - 60) {
-				doc.addPage();
-				y = 40;
-			}
-		});
-	}
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-	public async generate(tasks: Task[]): Promise<Buffer> {
-		const doc = new PDFDocument({ autoFirstPage: false, size: 'A4', margin: 40 });
-		const chunks: Buffer[] = [];
+        doc.font('Helvetica').fontSize(10).fillColor('#d1d5db')
+            .text(`Dia de trabalho: ${dateStr}`, 40, 55);
 
-		doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+        doc.fontSize(10)
+            .text(`Progresso geral: ${stats.overallProgress}% concluído (${stats.counts.done}/${stats.total} tarefas)`, 40, 70);
 
-		return new Promise<Buffer>((resolve, reject) => {
-			doc.on('end', () => resolve(Buffer.concat(chunks)));
-			doc.on('error', (err) => reject(err));
+        doc.y = 110;
+    }
 
-			doc.addPage();
-			doc.font('Helvetica-Bold').fontSize(20).fillColor('#111827').text('Daily Tasks Report', { align: 'left' });
-			doc.moveDown(0.3);
-			doc.font('Helvetica').fontSize(10).fillColor('gray').text(`Generated: ${new Date().toLocaleString()}`);
-			doc.moveDown();
+    private drawSummaryCards(doc: PDFKit.PDFDocument, stats: ReturnType<GenerateTaskPDF['computeStats']>) {
+        const cardsY = doc.y;
+        const cardWidth = 120;
+        const gap = 12;
+        const startX = 40;
 
-			// compute stats
-			const total = tasks.length;
-			const counts: Record<string, number> = { 'Done': 0, 'In Progress': 0, 'To Do': 0 };
-			let sumProg = 0;
+        const cards: { key: TaskStatus; value: number }[] = [
+            { key: 'done', value: stats.counts.done },
+            { key: 'in_progress', value: stats.counts.in_progress },
+            { key: 'to_test', value: stats.counts.to_test },
+            { key: 'todo', value: stats.counts.todo },
+        ];
 
-			tasks.forEach((t: any) => {
-				const prog = Number(this.getValue(t, 'progress') ?? 0);
-				const status = this.classify(prog);
-				counts[status] = (counts[status] || 0) + 1;
-				sumProg += prog;
-			});
+        cards.forEach((card, i) => {
+            const style = STATUS_STYLES[card.key];
+            const x = startX + i * (cardWidth + gap);
 
-			const avg = total ? sumProg / total : 0;
+            doc.roundedRect(x, cardsY, cardWidth, 60, 6).fill(style.light);
+            doc.rect(x, cardsY, 4, 60).fill(style.color);
 
-			this.drawSummary(doc, counts, total, avg);
+            doc.fillColor(style.color).font('Helvetica-Bold').fontSize(20)
+                .text(String(card.value), x + 14, cardsY + 10);
 
-			// Chart
-			this.drawPieChart(doc, counts, 140, doc.y + 70, 50);
+            doc.fillColor('#374151').font('Helvetica').fontSize(9)
+                .text(style.label, x + 14, cardsY + 34, { width: cardWidth - 20 });
+        });
 
-			// Move to table area
-			const tableStartY = doc.y + 120;
-			const startX = doc.page.margins.left;
-			const colWidths = [30, 160, 200, 120];
-			this.drawTable(doc, tasks, startX, tableStartY, colWidths);
+        doc.y = cardsY + 80;
+    }
 
-			doc.end();
-		});
-	}
+    private drawPieChart(doc: PDFKit.PDFDocument, stats: ReturnType<GenerateTaskPDF['computeStats']>) {
+        const centerX = 120;
+        const centerY = doc.y + 90;
+        const radius = 70;
+
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#111827')
+            .text('Distribuição das Tarefas', 40, doc.y);
+
+        const slices = (Object.keys(STATUS_STYLES) as TaskStatus[])
+            .map((key) => ({ key, value: stats.counts[key] }))
+            .filter((s) => s.value > 0);
+
+        let startAngle = -Math.PI / 2;
+
+        if (slices.length === 0) {
+            doc.font('Helvetica').fontSize(10).fillColor('#6b7280')
+                .text('Sem tarefas para exibir.', 40, centerY);
+        } else if (slices.length === 1) {
+            doc.circle(centerX, centerY, radius).fill(STATUS_STYLES[slices[0].key].color);
+        } else {
+            slices.forEach((slice) => {
+                const sliceAngle = (slice.value / stats.total) * Math.PI * 2;
+                this.drawPieSlice(doc, centerX, centerY, radius, startAngle, startAngle + sliceAngle, STATUS_STYLES[slice.key].color);
+                startAngle += sliceAngle;
+            });
+        }
+
+        const legendX = centerX + radius + 40;
+        let legendY = centerY - radius;
+        slices.forEach((slice) => {
+            const style = STATUS_STYLES[slice.key];
+            doc.rect(legendX, legendY, 10, 10).fill(style.color);
+            doc.fillColor('#111827').font('Helvetica').fontSize(10)
+                .text(`${style.label} — ${stats.percentages[slice.key]}%`, legendX + 16, legendY - 1);
+            legendY += 20;
+        });
+
+        doc.y = centerY + radius + 30;
+    }
+
+    private drawPieSlice(doc: PDFKit.PDFDocument, cx: number, cy: number, radius: number, startAngle: number, endAngle: number, color: string) {
+        const steps = 48;
+        doc.moveTo(cx, cy);
+        for (let i = 0; i <= steps; i++) {
+            const angle = startAngle + (endAngle - startAngle) * (i / steps);
+            doc.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+        }
+        doc.closePath().fill(color);
+    }
+
+    private drawTable(doc: PDFKit.PDFDocument, tasks: Task[]) {
+        const startX = 40;
+        const colWidths = { id: 30, title: 130, description: 190, status: 80, progress: 60 };
+        const tableWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
+        const rowHeight = 26;
+
+        if (doc.y + 40 > doc.page.height - 60) doc.addPage();
+
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#111827')
+            .text('Detalhamento das Tarefas', startX, doc.y);
+        doc.moveDown(0.5);
+
+        let y = doc.y;
+
+        const drawHeaderRow = () => {
+            doc.rect(startX, y, tableWidth, rowHeight).fill('#111827');
+            doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(9);
+            let x = startX;
+            const headers: [string, number][] = [
+                ['ID', colWidths.id], ['Título', colWidths.title], ['Descrição', colWidths.description],
+                ['Status', colWidths.status], ['Progresso', colWidths.progress],
+            ];
+            headers.forEach(([label, w]) => {
+                doc.text(label, x + 6, y + 8, { width: w - 8 });
+                x += w;
+            });
+            y += rowHeight;
+        };
+
+        drawHeaderRow();
+
+        tasks.forEach((t, i) => {
+            const status = this.getStatus(t);
+            const style = STATUS_STYLES[status];
+
+            if (y + rowHeight > doc.page.height - 60) {
+                doc.addPage();
+                y = 40;
+                drawHeaderRow();
+            }
+
+            doc.rect(startX, y, tableWidth, rowHeight).fill(i % 2 === 0 ? '#ffffff' : '#f9fafb');
+
+            let x = startX;
+            doc.fillColor('#374151').font('Helvetica').fontSize(9);
+
+            doc.text(String(this.getId(t)), x + 6, y + 8, { width: colWidths.id - 8 }); x += colWidths.id;
+            doc.text(this.getTitle(t), x + 6, y + 8, { width: colWidths.title - 8 }); x += colWidths.title;
+            doc.text(this.getDescription(t), x + 6, y + 8, { width: colWidths.description - 8 }); x += colWidths.description;
+
+            doc.roundedRect(x + 6, y + 5, colWidths.status - 12, 16, 8).fill(style.light);
+            doc.fillColor(style.color).font('Helvetica-Bold').fontSize(8)
+                .text(style.label, x + 6, y + 9, { width: colWidths.status - 12, align: 'center' });
+            x += colWidths.status;
+
+            const progress = typeof (t as any).getProgress === 'function' ? (t as any).getProgress() : (t as any).progress;
+            doc.fillColor('#374151').font('Helvetica').fontSize(9)
+                .text(progress != null ? `${progress}%` : '—', x + 6, y + 8, { width: colWidths.progress - 8 });
+
+            y += rowHeight;
+        });
+
+        doc.y = y + 20;
+    }
 }
 
 export default GenerateTaskPDF;
