@@ -12,7 +12,11 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.json({ message: 'Hello World!' });
+    res.json({
+        message: 'Task Statistics!',
+        documentation: '/dev/docs',
+        demo: '/dev/demo'
+    });
 });
 
 app.use('/dev', MasterRouter);

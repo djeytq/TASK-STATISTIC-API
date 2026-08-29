@@ -3,12 +3,739 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Task Statistics API — documentation. Generate beautiful PDF statistics reports for your tasks.">
+    <title>Task Statistics API · Documentation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="./resources/css/general.css">
-    <title>API TO GENERATE PDF OF TASKS STATISTICS</title>
 </head>
 <body>
-    
+
+    <!-- ==================================================
+         SIDEBAR (navigation summary — left side)
+    ================================================== -->
+    <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+    </button>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo">📊</div>
+            <div class="brand-text">
+                <span class="brand-title">Task Statistics API</span>
+                <span class="brand-subtitle">Documentation</span>
+            </div>
+            <button type="button" id="sidebarClose" class="sidebar-close" aria-label="Close menu">×</button>
+        </div>
+
+        <div class="sidebar-section-tag">Contents</div>
+
+        <nav class="nav">
+            <a href="#overview" class="nav-link active"><span class="nav-index">01</span> Overview</a>
+            <a href="#technologies" class="nav-link"><span class="nav-index">02</span> Technologies</a>
+            <a href="#structure" class="nav-link"><span class="nav-index">03</span> Project Structure</a>
+            <a href="#endpoints" class="nav-link"><span class="nav-index">04</span> Endpoints</a>
+            <a href="#generate-pdf" class="nav-link"><span class="nav-index">05</span> Generate a PDF</a>
+            <a href="#connect-front" class="nav-link"><span class="nav-index">06</span> Connect a Frontend</a>
+            <a href="#demo" class="nav-link"><span class="nav-index">07</span> Ready-made Frontend</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p class="sidebar-footer-author">Developed by <strong>Djuma Capuepue</strong></p>
+            <a class="sidebar-footer-link" href="https://github.com/djeytq/TASK-STATISTIC-API" target="_blank" rel="noopener">
+                View on GitHub →
+            </a>
+        </div>
+    </aside>
+
+    <!-- ==================================================
+         CONTENT (right / body)
+    ================================================== -->
+    <main class="content">
+
+        <header class="hero">
+
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                REST API · TypeScript · Express · PDFKit
+            </div>
+
+            <h1 class="hero-title">Task Statistics <span>API</span></h1>
+
+            <p class="hero-subtitle">
+                A lightweight REST API that receives your tasks and generates a
+                beautiful <strong>PDF statistics report</strong> — summary cards,
+                a distribution pie chart and a detailed table, ready to download.
+            </p>
+
+            <div class="hero-actions">
+
+                <button type="button" class="btn btn-primary" data-copy="POST http://localhost:8083/dev/task/generate-report">
+                    <span class="btn-method">POST</span>
+                    <code>/dev/task/generate-report</code>
+                    <span class="btn-copy-label">Copy</span>
+                </button>
+
+                <a class="btn btn-outline" href="/dev/demo">
+                    Open the live demo →
+                </a>
+
+            </div>
+
+            <p class="hero-hint">
+                Base URL: <code>http://localhost:8083</code> &nbsp;·&nbsp; configured via
+                <code>PORT</code> in <code>.env</code>
+            </p>
+
+        </header>
+
+        <!-- ==================================================
+         SECTION 01 · OVERVIEW
+    ================================================== -->
+        <section id="overview" class="section">
+
+            <div class="section-head">
+                <span class="section-number">01</span>
+                <h2 class="section-title">What is this API?</h2>
+            </div>
+
+            <p class="lead">
+                The <strong>Task Statistics API</strong> is a RESTful backend that turns a
+                simple array of tasks into a <strong>professional PDF report</strong>.
+            </p>
+
+            <p>
+                You send a list of tasks (id, title, description and progress status),
+                the API validates and processes them, builds a statistical report with
+                PDFKit — summary cards, a pie chart with the distribution of statuses and
+                a detailed table of every task — and answers with a <code>application/pdf</code>
+                file ready to be downloaded by the browser.
+            </p>
+
+            <div class="feature-grid">
+
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h4>PDF generation</h4>
+                    <p>Beautiful reports generated server-side with PDFKit: header, status cards, pie chart and task table.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h4>CORS enabled</h4>
+                    <p>Any frontend — local or remote — can call the API. No extra proxy needed.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🧩</div>
+                    <h4>Typed &amp; modular</h4>
+                    <p>TypeScript models, controllers, services and helpers with a clean layered structure.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h4>Ready-made frontend</h4>
+                    <p>No frontend yet? The API ships with a demo page you can serve and use right away.</p>
+                </div>
+
+            </div>
+
+            <div class="callout">
+                <strong>Quick start</strong> — clone the repository, run <code>npm install</code>,
+                then <code>npm run dev</code>. The server will start on
+                <code>http://localhost:8083</code> (or the <code>PORT</code> defined in your
+                <code>.env</code> file).
+            </div>
+
+        </section>
+
+        <!-- ==================================================
+         SECTION 02 · TECHNOLOGIES
+    ================================================== -->
+        <section id="technologies" class="section">
+
+            <div class="section-head">
+                <span class="section-number">02</span>
+                <h2 class="section-title">Technologies</h2>
+            </div>
+
+            <p>
+                Everything is built with a small, focused and modern stack:
+            </p>
+
+            <div class="tech-grid">
+
+                <div class="tech-card">
+                    <span class="tech-icon">🟢</span>
+                    <div>
+                        <h4>Node.js &amp; TypeScript</h4>
+                        <p>Runtime and language — type-safe, maintainable server code.</p>
+                    </div>
+                </div>
+
+                <div class="tech-card">
+                    <span class="tech-icon">🚂</span>
+                    <div>
+                        <h4>Express</h4>
+                        <p>Web framework used for routing, middlewares and static serving.</p>
+                    </div>
+                </div>
+
+                <div class="tech-card">
+                    <span class="tech-icon">📝</span>
+                    <div>
+                        <h4>PDFKit</h4>
+                        <p>PDF generation library: vector drawing, tables, charts and text layout.</p>
+                    </div>
+                </div>
+
+                <div class="tech-card">
+                    <span class="tech-icon">🌐</span>
+                    <div>
+                        <h4>CORS</h4>
+                        <p>Allows browsers from any origin to consume the API safely.</p>
+                    </div>
+                </div>
+
+                <div class="tech-card">
+                    <span class="tech-icon">🔐</span>
+                    <div>
+                        <h4>Dotenv</h4>
+                        <p>Loads configuration from the <code>.env</code> file (e.g. <code>PORT</code>).</p>
+                    </div>
+                </div>
+
+                <div class="tech-card">
+                    <span class="tech-icon">⚙️</span>
+                    <div>
+                        <h4>Nodemon + ts-node</h4>
+                        <p>Development workflow: auto-restart on change, TypeScript running directly.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ==================================================
+         SECTION 03 · PROJECT STRUCTURE
+    ================================================== -->
+        <section id="structure" class="section">
+
+            <div class="section-head">
+                <span class="section-number">03</span>
+                <h2 class="section-title">Project Structure</h2>
+            </div>
+
+            <p>
+                The codebase follows a classic <strong>layered architecture</strong>:
+                Route → Controller → Service → Model, with a dedicated helper for the PDF engine.
+            </p>
+
+            <div class="code-block">
+                <code data-lang="tree"><span class="tok-comment"># folder structure (simplified)</span>
+task-statistic/
+├── src/
+│   ├── app.ts                 <span class="tok-comment"># Express entry point + CORS + middlewares</span>
+│   ├── routes/
+│   │   ├── index.ts           <span class="tok-comment"># Master router mounted at "/dev"</span>
+│   │   ├── task.routes.ts     <span class="tok-comment"># Task endpoints    (/dev/task/*)</span>
+│   │   ├── docs.routes.ts     <span class="tok-comment"># Documentation page (/dev/docs)</span>
+│   │   └── demo.routes.ts     <span class="tok-comment"># Demo frontend     (/dev/demo)</span>
+│   ├── controller/
+│   │   └── TaskController.ts  <span class="tok-comment"># Handles HTTP requests & responses</span>
+│   ├── service/
+│   │   └── TaskService.ts     <span class="tok-comment"># Validates & maps payload into Tasks</span>
+│   ├── model/
+│   │   └── Task.ts            <span class="tok-comment"># Task entity (id, title, description, progress)</span>
+│   ├── helper/
+│   │   └── generateTaskPDF.ts <span class="tok-comment"># PDFKit generator (summaries, chart, table)</span>
+│   ├── interfaces/
+│   │   ├── Progress.ts        <span class="tok-comment"># "TO_DO" | "IN_PROGRESS" | "IN_TEST" | "DONE"</span>
+│   │   └── generatePDF.ts     <span class="tok-comment"># Contract for PDF generators</span>
+│   ├── pages/                 <span class="tok-comment"># This documentation page</span>
+│   └── tests/                 <span class="tok-comment"># Ready-made frontend demo</span>
+├── .env                       <span class="tok-comment"># PORT=8083</span>
+├── package.json
+└── tsconfig.json</code>
+            </div>
+
+            <h3>How a request flows</h3>
+
+            <div class="flow">
+                <span class="flow-step">Browser<br><small>fetch POST</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">Route<br><small>task.routes</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">Controller<br><small>TaskController</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">Service<br><small>TaskService</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">Helper<br><small>generateTaskPDF</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">PDF<br><small>response</small></span>
+            </div>
+
+            <ul class="nice-list">
+                <li><strong>Routes</strong> declare the HTTP endpoints and delegate to the controller.</li>
+                <li><strong>Controller</strong> reads the body, calls the service, sets headers and sends the response.</li>
+                <li><strong>Service</strong> validates the payload (must be an array) and creates typed <code>Task</code> instances.</li>
+                <li><strong>Helper</strong> generates the PDF buffer using PDFKit with status colors, summaries, a pie chart and a table.</li>
+            </ul>
+
+        </section>
+
+        <!-- ==================================================
+         SECTION 04 · ENDPOINTS
+    ================================================== -->
+        <section id="endpoints" class="section">
+
+            <div class="section-head">
+                <span class="section-number">04</span>
+                <h2 class="section-title">Endpoints</h2>
+            </div>
+
+            <p>
+                All routes live under the <code>/dev</code> prefix. The star of the API is
+                <code>POST /dev/task/generate-report</code> — the method that creates the PDF.
+            </p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Route</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="method method-post">POST</span></td>
+                            <td><code>/dev/task/add</code></td>
+                            <td>Add a task (placeholder)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method method-put">PUT</span></td>
+                            <td><code>/dev/task/update</code></td>
+                            <td>Update a task (placeholder)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method method-delete">DELETE</span></td>
+                            <td><code>/dev/task/delete</code></td>
+                            <td>Delete a task (placeholder)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method method-get">GET</span></td>
+                            <td><code>/dev/task/get</code></td>
+                            <td>Get a single task (placeholder)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method method-get">GET</span></td>
+                            <td><code>/dev/task/getAll</code></td>
+                            <td>Get all tasks (placeholder)</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><span class="method method-post">POST</span></td>
+                            <td><code>/dev/task/generate-report</code></td>
+                            <td><strong>Generate the PDF statistics report</strong> ⭐</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method method-get">GET</span></td>
+                            <td><code>/dev/docs</code></td>
+                            <td>This documentation page</td>
+                        </tr>
+                        <tr>
+                            <td><span class="method method-get">GET</span></td>
+                            <td><code>/dev/demo</code></td>
+                            <td>Ready-made demo frontend</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout">
+                To generate the PDF you must use
+                <code>POST http://localhost:8083/dev/task/generate-report</code> with the tasks
+                sent as a <strong>JSON array</strong> in the request body.
+            </div>
+
+        </section>
+
+        <!-- ==================================================
+         SECTION 05 · GENERATE A PDF
+    ================================================== -->
+        <section id="generate-pdf" class="section">
+
+            <div class="section-head">
+                <span class="section-number">05</span>
+                <h2 class="section-title">How to create a PDF</h2>
+            </div>
+
+            <p class="lead">
+                The method that generates the PDF statistics is
+                <code>POST /dev/task/generate-report</code>.
+            </p>
+
+            <h3>1. Send the payload</h3>
+
+            <p>
+                The body must be a <strong>JSON array of tasks</strong>. Each task accepts:
+            </p>
+
+            <ul class="nice-list">
+                <li><code>id</code> — number (optional, falls back to the position + 1)</li>
+                <li><code>title</code> — string</li>
+                <li><code>description</code> — string</li>
+                <li><code>progress</code> — one of
+                    <code>TO_DO</code>, <code>IN_PROGRESS</code>, <code>IN_TEST</code>, <code>DONE</code>
+                </li>
+            </ul>
+
+            <div class="code-block">
+                <code data-lang="json">[
+  {
+    "id": 1,
+    "title": "Create login page",
+    "description": "Auth screen for the mobile app",
+    "progress": "IN_PROGRESS"
+  },
+  {
+    "id": 2,
+    "title": "Fix responsive navbar",
+    "description": "Fix overflow issues on small screens",
+    "progress": "DONE"
+  },
+  {
+    "id": 3,
+    "title": "Design empty states",
+    "description": "Nice placeholder for empty lists",
+    "progress": "TO_DO"
+  }
+]</code>
+            </div>
+
+            <h3>2. The response</h3>
+
+            <p>
+                On success the API answers with <code>200 OK</code> and the file as a binary
+                <code>application/pdf</code> attachment:
+            </p>
+
+            <div class="code-block">
+                <code data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="tasks.pdf"
+Content-Length: &lt;bytes&gt;</code>
+            </div>
+
+            <p>
+                If the body is not an array of valid tasks, you get a
+                <code>400 Bad Request</code> with a JSON error message instead.
+            </p>
+
+            <h3>3. Test it without a browser (cURL)</h3>
+
+            <div class="code-block">
+                <code data-lang="bash">curl -X POST http://localhost:8083/dev/task/generate-report \
+  -H "Content-Type: application/json" \
+  -d '[
+    {"id":1,"title":"Create login page","description":"Auth screen","progress":"IN_PROGRESS"},
+    {"id":2,"title":"Fix navbar","description":"Responsive issue","progress":"DONE"}
+  ]' \
+  -o tasks.pdf
+
+# The generated report is saved as "tasks.pdf"</code>
+            </div>
+
+            <h3>Inside the generated PDF</h3>
+
+            <div class="feature-grid">
+
+                <div class="feature-card">
+                    <div class="feature-icon">🧭</div>
+                    <h4>Header</h4>
+                    <p>Report title, the current date and the overall progress percentage.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔢</div>
+                    <h4>Summary cards</h4>
+                    <p>Counts per status: Done, In Progress, In Test and To Do.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🥧</div>
+                    <h4>Pie chart</h4>
+                    <p>Visual distribution of the tasks by status, with a legend and percentages.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h4>Task table</h4>
+                    <p>Every task with ID, title, description and a colored status badge.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ==================================================
+         SECTION 06 · CONNECT A FRONTEND  (most important)
+    ================================================== -->
+        <section id="connect-front" class="section">
+
+            <div class="section-head">
+                <span class="section-number">06</span>
+                <h2 class="section-title">How to connect a frontend to this API</h2>
+            </div>
+
+            <p class="lead">
+                Connecting your frontend is <strong>one <code>fetch</code> call</strong>. The only
+                detail that surprises people: the endpoint returns a <strong>PDF file</strong>,
+                not JSON — so you must read the response as a
+                <strong class="accent-text">Blob</strong> and trigger the download in the browser.
+            </p>
+
+            <p>
+                This is exactly the approach used by the frontend in the
+                <code>src/tests</code> folder of this project. Step by step:
+            </p>
+
+            <div class="steps">
+
+                <div class="step">
+                    <span class="step-num">1</span>
+                    <div>
+                        <strong>Send the tasks as JSON</strong>
+                        <p>
+                            Use <code>fetch</code> with <code>method: "POST"</code> and the header
+                            <code>Content-Type: application/json</code>. The body is the tasks
+                            array serialized with <code>JSON.stringify</code>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num">2</span>
+                    <div>
+                        <strong>Check the response</strong>
+                        <p>
+                            If <code>response.ok</code> is <code>false</code>, the server answered
+                            with an error — read the text and throw it so you can show it
+                            to the user.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num">3</span>
+                    <div>
+                        <strong>Read the PDF as a Blob</strong>
+                        <p>
+                            Use <code>await response.blob()</code> instead of
+                            <code>response.json()</code>. The payload is a binary PDF file.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num">4</span>
+                    <div>
+                        <strong>Create a temporary URL</strong>
+                        <p>
+                            <code>window.URL.createObjectURL(blob)</code> generates a link the
+                            browser can use to access the blob in memory.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num">5</span>
+                    <div>
+                        <strong>Trigger the download</strong>
+                        <p>
+                            Create a temporary <code>&lt;a&gt;</code> element, set its
+                            <code>href</code> to the object URL and its <code>download</code>
+                            attribute to <code>"tasks.pdf"</code>, then click it programmatically.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num">6</span>
+                    <div>
+                        <strong>Clean up</strong>
+                        <p>
+                            Remove the temporary link and release the blob memory with
+                            <code>window.URL.revokeObjectURL(url)</code>.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <h3>Complete example (used in <code>src/tests/script.js</code>)</h3>
+
+            <div class="code-block">
+                <code data-lang="javascript">// tasks = your array of tasks, e.g.
+// [{ id: 1, title: "...", description: "...", progress: "IN_PROGRESS" }, ...]
+
+async function generateTaskReport(tasks) {
+
+    try {
+
+        // 1. Send the tasks as JSON
+        const response = await fetch(
+            "http://localhost:8083/dev/task/generate-report",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(tasks)
+            }
+        );
+
+        // 2. Handle errors
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+                `HTTP ${response.status}: ${errorText}`
+            );
+        }
+
+        // 3. The response is a PDF file -> read it as a Blob
+        const blob = await response.blob();
+
+        // 4. Create a temporary URL for the blob
+        const url = window.URL.createObjectURL(blob);
+
+        // 5. Create a temporary <a> link and click it to download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "tasks.pdf";   // name of the downloaded file
+        document.body.appendChild(link);
+        link.click();
+
+        // 6. Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log("PDF generated successfully!");
+
+    } catch (error) {
+        console.error(error);
+        alert("Failed to generate PDF: " + error.message);
+    }
+}</code>
+            </div>
+
+            <div class="callout success">
+                <strong>Remember</strong> — the route you call is
+                <code>POST /dev/task/generate-report</code>. Full URL:
+                <code>http://localhost:8083/dev/task/generate-report</code>. Because CORS is
+                enabled, this works from any origin.
+            </div>
+
+            <div class="callout warning">
+                <strong>Why Blob?</strong> — If you used <code>response.json()</code> here, it
+                would fail: the server's answer is a binary <code>application/pdf</code> file,
+                not JSON. The <code>blob()</code> method keeps the raw binary data so the
+                browser can download it correctly.
+            </div>
+
+        </section>
+
+        <!-- ==================================================
+         SECTION 07 · READY-MADE FRONTEND (DEMO)
+    ================================================== -->
+        <section id="demo" class="section">
+
+            <div class="section-head">
+                <span class="section-number">07</span>
+                <h2 class="section-title">Ready-made frontend (if you don't have one yet)</h2>
+            </div>
+
+            <p class="lead">
+                Don't have a frontend yet? The API already ships with one — a small
+                task manager page that calls the PDF endpoint exactly like the example above.
+            </p>
+
+            <p>
+                The API serves this frontend for you. Open it in your browser:
+            </p>
+
+            <div class="demo-box">
+
+                <div class="demo-box-header">
+                    <span class="demo-status-dot"></span>
+                    Live demo — served by the API
+                </div>
+
+                <div class="demo-box-body">
+                    <div class="demo-url">
+                        <span class="method method-get">GET</span>
+                        <code>/dev/demo</code>
+                    </div>
+                    <a class="btn btn-primary" href="/dev/demo" target="_blank" rel="noopener">
+                        Open the demo →
+                    </a>
+                    <p class="demo-hint">
+                        Full URL: <code>http://localhost:8083/dev/demo</code>
+                    </p>
+                </div>
+
+            </div>
+
+            <h3>What the demo does</h3>
+
+            <ul class="nice-list">
+                <li>Adds, edits and deletes tasks with a modal form.</li>
+                <li>Stores the tasks in memory (<code>tasks</code> array).</li>
+                <li>On <strong>Generate PDF</strong>, it sends the array with
+                    <code>fetch</code> to <code>/dev/task/generate-report</code>.</li>
+                <li>Reads the answer as a <strong>Blob</strong>, creates an object URL and
+                    downloads <code>tasks.pdf</code> automatically.</li>
+            </ul>
+
+            <p>
+                The source files live in the <code>src/tests</code> folder:
+            </p>
+
+            <div class="code-block">
+                <code data-lang="tree">src/tests/
+├── form.html     <span class="tok-comment"># demo page structure</span>
+├── style.css     <span class="tok-comment"># demo styles</span>
+└── script.js     <span class="tok-comment"># fetch + Blob logic (see section 06)</span></code>
+            </div>
+
+            <div class="callout">
+                The demo works out of the box because it is served by the same origin
+                (<code>localhost:8083</code>), so no CORS configuration is needed when testing
+                locally. For a separate frontend (another port/domain), CORS is already
+                enabled by the API.
+            </div>
+
+        </section>
+
+        <footer class="footer">
+            <p>
+                <strong>Task Statistics API</strong> — this documentation and the demo are
+                served by the API itself: <code>/dev/docs</code> and <code>/dev/demo</code>.
+            </p>
+            <p class="footer-author">Created by <strong>Djuma Capuepue</strong> 💙</p>
+        </footer>
+
+    </main>
 
     <script src="./resources/js/general.js"></script>
+
 </body>
 </html>
