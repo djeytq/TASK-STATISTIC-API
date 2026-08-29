@@ -18,10 +18,10 @@ interface StatusStyle {
 }
 
 const STATUS_STYLES: Record<TaskStatus, StatusStyle> = {
-    DONE:        { label: 'Concluída',    color: '#16a34a', light: '#dcfce7' },
+    DONE: { label: 'Concluída', color: '#16a34a', light: '#dcfce7' },
     IN_PROGRESS: { label: 'Em Progresso', color: '#f59e0b', light: '#fef3c7' },
-    IN_TEST:     { label: 'Em Teste',     color: '#2563eb', light: '#dbeafe' },
-    TO_DO:        { label: 'A Fazer',      color: '#6b7280', light: '#f3f4f6' },
+    IN_TEST: { label: 'Em Teste', color: '#2563eb', light: '#dbeafe' },
+    TO_DO: { label: 'A Fazer', color: '#6b7280', light: '#f3f4f6' },
 };
 
 class GenerateTaskPDF implements GeneratePDF {
@@ -44,6 +44,7 @@ class GenerateTaskPDF implements GeneratePDF {
             this.drawSummaryCards(doc, stats);
             this.drawPieChart(doc, stats);
             this.drawTable(doc, tasks);
+            this.generateFooter(doc);
 
             doc.end();
         });
@@ -209,7 +210,7 @@ class GenerateTaskPDF implements GeneratePDF {
             let x = startX;
             const headers: [string, number][] = [
                 ['ID', colWidths.id], ['Título', colWidths.title], ['Descrição', colWidths.description],
-                ['Status', colWidths.status], 
+                ['Status', colWidths.status],
                 /* ['Progresso', colWidths.progress], */
             ];
             headers.forEach(([label, w]) => {
@@ -245,16 +246,16 @@ class GenerateTaskPDF implements GeneratePDF {
                 .text(style.label, x + 6, y + 9, { width: colWidths.status - 12, align: 'center' });
             x += colWidths.status;
 
-         /*    const progress = typeof (t as any).getProgress === 'function' ? (t as any).getProgress() : (t as any).progress;
-            doc.fillColor('#374151').font('Helvetica').fontSize(9)
-                .text(progress != null ? `${progress} teste %` : '—', x + 6, y + 8, { width: colWidths.progress - 8 });
- */
+            /*    const progress = typeof (t as any).getProgress === 'function' ? (t as any).getProgress() : (t as any).progress;
+               doc.fillColor('#374151').font('Helvetica').fontSize(9)
+                   .text(progress != null ? `${progress} teste %` : '—', x + 6, y + 8, { width: colWidths.progress - 8 });
+    */
             y += rowHeight;
         });
 
         doc.y = y + 20;
 
-        
+
     }
 
     private generateFooter(doc: PDFKit.PDFDocument) {
