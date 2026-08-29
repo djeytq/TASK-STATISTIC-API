@@ -265,6 +265,12 @@ class GenerateTaskPDF implements GeneratePDF {
             780,
             { align: 'center', width: 500 }
         );
+         doc.fontSize(8).fillColor('#bdc3c7').text(
+            'Develop by Djuma Capuepue & José Carlos.',
+            50,
+            780,
+            { align: 'center', width: 500 }
+        );
     }
 }
 
