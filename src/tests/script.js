@@ -430,8 +430,8 @@ sendTasksButton.addEventListener(
 
             const response =
                 await fetch(
-                    /* "http://localhost:8083/dev/task/generate-report", */
-                    "https://task-statistic-api.vercel.app//dev/task/generate-report",
+                    "http://localhost:8083/dev/task/generate-report",
+                    /* "https://task-statistic-api.vercel.app//dev/task/generate-report", */
                     {
                         method: "POST",
 
